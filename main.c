@@ -20,8 +20,8 @@ float cellSize = 1.0f / numRows;
 
 int player = cross;
 
-int human = circle;
-int bot = cross;
+int human = cross;
+int bot = circle;
 
 int circleAmount;
 int crossAmount;
@@ -76,29 +76,33 @@ void ShowField() {
     glEnd();
 }
 
-int CheckWin() {
+int CheckWin(bool flag) {
     for (int i = 0; i < numRows; i++) {
         if (field[i][0].symbol == field[i][1].symbol && field[i][1].symbol == field[i][2].symbol && field[i][0].symbol != 0)
         {
-            //ended = 1;
+            if (flag)
+                ended = 1;
             return field[i][0].symbol; // Победа по строке
         }
     }
     for (int j = 0; j < numCols; j++) {
         if (field[0][j].symbol == field[1][j].symbol && field[1][j].symbol == field[2][j].symbol && field[0][j].symbol != 0)
         {
-            //ended = 1;
+            if (flag)
+                ended = 1;
             return field[0][j].symbol; // Победа по столбцу
         }
     }
     if (field[0][0].symbol == field[1][1].symbol && field[1][1].symbol == field[2][2].symbol && field[0][0].symbol != 0)
     {
-        //ended = 1;
+        if (flag)
+            ended = 1;
         return field[0][0].symbol; // Победа по диагонали
     }
     if (field[0][2].symbol == field[1][1].symbol && field[1][1].symbol == field[2][0].symbol && field[0][2].symbol != 0)
     {
-        //ended = 1;
+        if (flag)
+            ended = 1;
         return field[0][2].symbol; // Победа по диагонали
     }
  
@@ -246,6 +250,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
             glPopMatrix();
             SwapBuffers(hDC);
+
+
         }
     }
 
@@ -285,44 +291,39 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         ScreenToOpenGL(hwnd, LOWORD(lParam), HIWORD(lParam), &pf.x, &pf.y);
         int x = (int)pf.x;
         int y = (int)pf.y;
-        if (ended) {
-            NewGame();
-            break;
-        }
-        if (InMap(x, y)) {
-            if (player == bot) {
-                int bestRow, bestCol;
 
-                findBestMove(field, &bestRow, &bestCol, bot);
-                field[bestRow][bestCol].symbol = bot;
-                player = human;
-            }
-            else {
-                if (field[y][x].symbol == empty && ended == 0) {
-                    field[y][x].symbol = player;
+        if (InMap(x, y) && !ended) {
+            if (field[y][x].symbol == empty && ended == 0) {
+                field[y][x].symbol = player;
+                cellAmount--;
+                if (CheckWin(true) > 0) {
+                    const char* playerName = (player == cross) ? "Cross" : "Circle";
+                    printf("%s won the game!\n", playerName);
+                }
+                else {
+                    if (cellAmount == 0) {
+                        printf("DRAW\n");
+                        //ended = 1;
+                    }
+                }
+                player = (player == cross) ? circle : cross;
+                if (player == bot) {
+                    int bestRow, bestCol;
+
+                    findBestMove(field, &bestRow, &bestCol, bot);
+
+                    field[bestRow][bestCol].symbol = bot;
                     cellAmount--;
-                    if (CheckWin() > 0) {
+                    if (CheckWin(true) > 0) {
                         const char* playerName = (player == cross) ? "Cross" : "Circle";
                         printf("%s won the game!\n", playerName);
                     }
-                    else {
-                        if (cellAmount == 0) {
-                            printf("DRAW\n");
-                            //ended = 1;
-                        }
-                    }
-                    player = (player == cross) ? circle : cross;
-                    if (player == bot) {
-                        int bestRow, bestCol;
-
-                        findBestMove(field, &bestRow, &bestCol, bot);
-                        printf("%d %d\n", bestRow, bestCol);
-                        field[bestRow][bestCol].symbol = bot;
-                        player = human;
-                    }
-
+                    player = human;
                 }
+
             }
+                
+            
         }
 
 

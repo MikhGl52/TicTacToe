@@ -41,7 +41,7 @@ extern Tcell field[numRows][numCols];
 // Function declarations
 void showSymbol(int symbol);
 void ShowField();
-int CheckWin();
+int CheckWin(bool flag);
 void ScreenToOpenGL(HWND hwnd, int x, int y, float* ox, float* oy);
 int InMap(int x, int y);
 void NewGame();

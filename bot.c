@@ -16,7 +16,7 @@ circles wins = -1
 
 
 int evaluate(Tcell field[numRows][numCols]) {
-    int winner = CheckWin();
+    int winner = CheckWin(false);
     if (winner == cross) return 1;  // Крестики выигрывают
     if (winner == circle) return -1;  // Нолики выигрывают
     return 0;  // Ничья
@@ -75,6 +75,7 @@ int minimax(Tcell field[numRows][numCols], int depth, bool isMaximizing) {
     }
 }
 
+
 // Функция для нахождения лучшего хода
 void findBestMove(Tcell field[numRows][numCols], int* bestRow, int* bestCol, int currentPlayer) {
     int bestValue = (currentPlayer == cross) ? INT_MIN : INT_MAX;
@@ -95,11 +96,20 @@ void findBestMove(Tcell field[numRows][numCols], int* bestRow, int* bestCol, int
                 field[i][j].symbol = empty;
 
                 // Обновить лучший ход
-                if ((currentPlayer == cross && moveValue > bestValue) ||
-                    (currentPlayer == circle && moveValue < bestValue)) {
-                    bestValue = moveValue;
-                    *bestRow = i;
-                    *bestCol = j;
+                if ((currentPlayer == cross && moveValue >= bestValue) ||
+                    (currentPlayer == circle && moveValue <= bestValue)) {
+                    if (moveValue == bestValue) {
+                        if (rand() % 2 == 0) {
+                            *bestRow = i;
+                            *bestCol = j;
+                        }
+                    }
+                    else {
+                        bestValue = moveValue;
+                        *bestRow = i;
+                        *bestCol = j;
+                    }
+
                 }
             }
         }
