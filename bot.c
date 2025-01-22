@@ -75,6 +75,71 @@ int minimax(Tcell field[numRows][numCols], int depth, bool isMaximizing) {
     }
 }
 
+int alphaBetta(Tcell field[numRows][numCols], int depth, bool isMaximizing, int alpha, int beta) {
+
+    int score = evaluate(field);
+
+    // Если кто-то победил, возвращаем оценку
+    if (score != 0)
+        return score;
+
+    // Проверяем, остались ли свободные ходы
+    bool movesLeft = false;
+    for (int i = 0; i < numRows; i++) {
+        for (int j = 0; j < numCols; j++) {
+            if (field[i][j].symbol == empty) {
+                movesLeft = true;
+                break;
+            }
+        }
+        if (movesLeft) break;
+    }
+    if (!movesLeft) return 0;  // Ничья
+
+    // Максимизирующий игрок (крестики)
+    if (isMaximizing) {
+        int best = INT_MIN;
+
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                if (field[i][j].symbol == empty) {
+                    field[i][j].symbol = cross;
+                    int value = alphaBetta(field, depth + 1, false, alpha, beta);
+                    best = max(best, value);
+                    alpha = max(alpha, best);
+                    field[i][j].symbol = empty;
+
+                    // Альфа-бета отсечение
+                    if (beta <= alpha)
+                        return best;
+                }
+            }
+        }
+        return best;
+    }
+    // Минимизирующий игрок (нолики)
+    else {
+        int best = INT_MAX;
+
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                if (field[i][j].symbol == empty) {
+                    field[i][j].symbol = circle;
+                    int value = alphaBetta(field, depth + 1, true, alpha, beta);
+                    best = min(best, value);
+                    beta = min(beta, best);
+                    field[i][j].symbol = empty;
+
+                    // Альфа-бета отсечение
+                    if (beta <= alpha)
+                        return best;
+                }
+            }
+        }
+        return best;
+    }
+}
+
 
 // Функция для нахождения лучшего хода
 void findBestMove(Tcell field[numRows][numCols], int* bestRow, int* bestCol, int currentPlayer) {
@@ -86,16 +151,15 @@ void findBestMove(Tcell field[numRows][numCols], int* bestRow, int* bestCol, int
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (field[i][j].symbol == empty) {
-                // Сделать ход
+
                 field[i][j].symbol = currentPlayer;
 
-                // Оценить ход с помощью минимакса
-                int moveValue = minimax(field, 0, currentPlayer == circle);
+                int moveValue = alphaBetta(field, 0, currentPlayer == circle, INT_MIN, INT_MAX);
 
-                // Отменить ход
+
                 field[i][j].symbol = empty;
 
-                // Обновить лучший ход
+
                 if ((currentPlayer == cross && moveValue >= bestValue) ||
                     (currentPlayer == circle && moveValue <= bestValue)) {
                     if (moveValue == bestValue) {
